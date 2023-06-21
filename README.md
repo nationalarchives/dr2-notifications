@@ -1,3 +1,3 @@
 # DR2 Notifications
 
-This project is for sending slack messages in response to events.
+This project is for sending messages (only Slack at the moment) in response to events.
