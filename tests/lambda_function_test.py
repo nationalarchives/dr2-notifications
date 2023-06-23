@@ -33,17 +33,17 @@ class TestNotificationsLambda(unittest.TestCase):
 
     def test_get_slack_webhook_url_should_return_url_if_all_good(self):
         client = Mock()
-        client.get_secret_value = MagicMock(
-            return_value= {"SecretString": """{"slack_webhook_url":"https://mockWebhookUrl.com"}"""}
+        client.get_parameter = MagicMock(
+            return_value={"Parameter": {"Value":"https://mockWebhookUrl.com"}}
         )
-        slack_webhook_url = get_slack_webhook_url(client, "mockSecretName")
-        client.get_secret_value.assert_called_with(SecretId="mockSecretName")
+        slack_webhook_url = get_slack_webhook_url(client, "/secret/slack/mockSecretName")
+        client.get_parameter.assert_called_with(Name="/secret/slack/mockSecretName", WithDecryption=True)
 
         self.assertEqual(slack_webhook_url, "https://mockWebhookUrl.com")
 
     def test_get_slack_webhook_url_should_throw_error_if_client_error(self):
         client = Mock()
-        client.get_secret_value = Mock(
+        client.get_parameter = Mock(
             side_effect = ClientError({"Error": {"Code": "ErrorCode"}}, "")
         )
 
@@ -77,7 +77,7 @@ class TestNotificationsLambda(unittest.TestCase):
 
         response = verify_response(response)
 
-        self.assertEqual(response, "Response was 200")
+        self.assertEqual(response, "Response was 300")
 
     def test_verify_response_should_return_error_if_400_or_over(self):
         response = BaseHTTPResponse()

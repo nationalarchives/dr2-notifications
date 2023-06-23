@@ -21,15 +21,13 @@ def get_entity_info_and_return_slack_message(record: dict) -> str:
     return slack_message
 
 
-def get_slack_webhook_url(session_client: BaseClient, secret_name: str) -> str:
+def get_slack_webhook_url(session_client: BaseClient, parameter_name: str) -> str:
     try:
-        get_secret_value_response = session_client.get_secret_value(SecretId=secret_name)
+        parameter_response = session_client.get_parameter(Name=parameter_name, WithDecryption=True)
     except ClientError as e:
         raise e
 
-    secret_json_string: str = get_secret_value_response["SecretString"]
-    secret_json = json.loads(secret_json_string)
-    url: str = secret_json["slack_webhook_url"]
+    url: str = parameter_response["Parameter"]["Value"]
     return url
 
 
@@ -50,18 +48,18 @@ def verify_response(response: BaseHTTPResponse) -> str:
 
 
 def lambda_handler(event, context):
-    webhook_secret_name = os.environ["WEBHOOK_SECRET_NAME"]
+    webhook_parameter_name = os.environ["WEBHOOK_PARAMETER_NAME"]
     records: list[dict] = event["Records"]
 
     session = boto3.session.Session()
-    session_client: BaseClient = session.client(service_name="secretsmanager", region_name="eu-west-2")
+    session_client: BaseClient = session.client(service_name="ssm", region_name="eu-west-2")
 
     for record in records:
         slack_message = get_entity_info_and_return_slack_message(record)
         slack_message_in_json = {"text": slack_message}
 
         encoded_json_string: bytes = json.dumps(slack_message_in_json, indent=2).encode("utf-8")
-        slack_webhook_url = get_slack_webhook_url(session_client, webhook_secret_name)
+        slack_webhook_url = get_slack_webhook_url(session_client, webhook_parameter_name)
 
         resp: BaseHTTPResponse = send_slack_message(http.request, slack_webhook_url, encoded_json_string)
         verify_response(resp)
