@@ -13,6 +13,9 @@ class BaseHTTPResponse:
     data: bytes
 
 
+webhook_parameter_name = ""
+
+
 def get_entity_info_and_return_slack_message(record: dict) -> str:
     body = json.loads(record["body"])
     entity_ref: str = body["ref"]
@@ -48,7 +51,8 @@ def verify_response(response: BaseHTTPResponse) -> str:
 
 
 def lambda_handler(event, context):
-    webhook_parameter_name = os.environ["WEBHOOK_PARAMETER_NAME"]
+    global webhook_parameter_name
+    webhook_parameter_name = webhook_parameter_name if webhook_parameter_name else os.environ["WEBHOOK_PARAMETER_NAME"]
     records: list[dict] = event["Records"]
 
     session = boto3.session.Session()
