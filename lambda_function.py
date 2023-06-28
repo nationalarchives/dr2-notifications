@@ -14,6 +14,7 @@ class BaseHTTPResponse:
 
 
 webhook_parameter_name = ""
+slack_webhook_url = ""
 
 
 def get_entity_info_and_return_slack_message(record: dict) -> str:
@@ -52,18 +53,21 @@ def verify_response(response: BaseHTTPResponse) -> str:
 
 def lambda_handler(event, context):
     global webhook_parameter_name
-    webhook_parameter_name = webhook_parameter_name if webhook_parameter_name else os.environ["WEBHOOK_PARAMETER_NAME"]
-    records: list[dict] = event["Records"]
+    global slack_webhook_url
 
     session = boto3.session.Session()
     session_client: BaseClient = session.client(service_name="ssm", region_name="eu-west-2")
+
+    webhook_parameter_name = webhook_parameter_name if webhook_parameter_name else os.environ["WEBHOOK_PARAMETER_NAME"]
+    slack_webhook_url = slack_webhook_url if slack_webhook_url else get_slack_webhook_url(session_client, webhook_parameter_name)
+
+    records: list[dict] = event["Records"]
 
     for record in records:
         slack_message = get_entity_info_and_return_slack_message(record)
         slack_message_in_json = {"text": slack_message}
 
         encoded_json_string: bytes = json.dumps(slack_message_in_json, indent=2).encode("utf-8")
-        slack_webhook_url = get_slack_webhook_url(session_client, webhook_parameter_name)
 
         resp: BaseHTTPResponse = send_slack_message(http.request, slack_webhook_url, encoded_json_string)
         verify_response(resp)
