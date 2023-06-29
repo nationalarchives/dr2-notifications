@@ -1,2 +1,2 @@
-boto3 == 1.26.163
-botocore == 1.29.163
+boto3
+botocore

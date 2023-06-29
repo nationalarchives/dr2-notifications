@@ -13,7 +13,7 @@ jobs:
     with:
       repo-name: dr2-notifications
       test-command: |
-        pip install --target ./package -r requirements.txt
+        pip install -r requirements.txt
         python3 -m unittest
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
