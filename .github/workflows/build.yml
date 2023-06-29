@@ -16,7 +16,7 @@ jobs:
         mkdir package
         pip install --target ./package -r requirements-runtime.txt
         cd package
-        zip -r ../notifications_lambda.zip . -x __pycache__
+        zip -r ../notifications_lambda.zip .
         cd ..
         zip notifications_lambda.zip lambda_function.py
     secrets:
