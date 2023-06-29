@@ -14,7 +14,6 @@ jobs:
       artifact-name: notifications
       build-command: |
         mkdir package
-        pip install --target ./package boto3
         pip install --target ./package urllib3
         cd package
         zip -r ../notifications_lambda.zip . -x __pycache__
