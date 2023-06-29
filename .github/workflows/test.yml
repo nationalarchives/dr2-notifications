@@ -13,8 +13,7 @@ jobs:
     with:
       repo-name: dr2-notifications
       test-command: |
-        python3 -m pip install botocore
-        python3 -m pip install boto3
+        pip install --target ./package -r requirements.txt
         python3 -m unittest
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
