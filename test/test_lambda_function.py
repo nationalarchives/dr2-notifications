@@ -1,12 +1,10 @@
 import unittest
+from unittest.mock import MagicMock, Mock
 
-from botocore.client import BaseClient
 from botocore.exceptions import ClientError
 
 from lambda_function import get_entity_info_and_return_slack_message, get_slack_webhook_url, send_slack_message, \
     BaseHTTPResponse, verify_response
-
-from unittest.mock import MagicMock, Mock
 
 
 class TestNotificationsLambda(unittest.TestCase):
@@ -14,19 +12,19 @@ class TestNotificationsLambda(unittest.TestCase):
     def test_get_entity_info_and_return_slack_message(self):
         mock_record = {
                 'messageId': '19dd0b57-b21e-4ac1-bd88-01bbb068cb78',
-                 'receiptHandle': 'MessageReceiptHandle',
-                 'body': '{"ref": "1234"}',
-                 'attributes': {
-                    'ApproximateReceiveCount': '1',
-                    'SentTimestamp': '1523232000000',
-                    'SenderId': '123456789012',
-                    'ApproximateFirstReceiveTimestamp': '1523232000001'
-                 },
-                 'messageAttributes': {},
-                 'md5OfBody': '{{{md5_of_body}}}',
-                 'eventSource': 'aws:sqs',
-                 'eventSourceARN': 'arn:aws:sqs:us-east-1:123456789012:MyQueue',
-                 'awsRegion': 'us-east-1'
+                'receiptHandle': 'MessageReceiptHandle',
+                'body': '{"ref": "1234"}',
+                'attributes': {
+                   'ApproximateReceiveCount': '1',
+                   'SentTimestamp': '1523232000000',
+                   'SenderId': '123456789012',
+                   'ApproximateFirstReceiveTimestamp': '1523232000001'
+                },
+                'messageAttributes': {},
+                'md5OfBody': '{{{md5_of_body}}}',
+                'eventSource': 'aws:sqs',
+                'eventSourceARN': 'arn:aws:sqs:us-east-1:123456789012:MyQueue',
+                'awsRegion': 'us-east-1'
              }
         slack_message = get_entity_info_and_return_slack_message(mock_record)
         self.assertEqual(f"A SQS message containing the entity ref: _*1234*_ was sent to the _*DLQ*_", slack_message)
@@ -34,7 +32,7 @@ class TestNotificationsLambda(unittest.TestCase):
     def test_get_slack_webhook_url_should_return_url_if_all_good(self):
         client = Mock()
         client.get_parameter = MagicMock(
-            return_value={"Parameter": {"Value":"https://mockWebhookUrl.com"}}
+            return_value={"Parameter": {"Value": "https://mockWebhookUrl.com"}}
         )
         slack_webhook_url = get_slack_webhook_url(client, "/secret/slack/mockSecretName")
         client.get_parameter.assert_called_with(Name="/secret/slack/mockSecretName", WithDecryption=True)
