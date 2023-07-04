@@ -19,9 +19,13 @@ slack_webhook_url = ""
 
 def get_entity_info_and_return_slack_message(record: dict) -> str:
     body = json.loads(record["body"])
-    entity_ref: str = body["ref"]
+    new_state_value = body["NewStateValue"]
+    queue = list(filter(lambda x: x['value'] != 'QueueName', body["Trigger"]["Dimensions"]))[0]['value']
+    if new_state_value == "ALARM":
+        slack_message = f"A message was sent to the DLQ for {queue}"
+    else:
+        slack_message = f"The DLQ for {queue} has been cleared"
 
-    slack_message = f"A SQS message containing the entity ref: _*{entity_ref}*_ was sent to the _*DLQ*_"
     return slack_message
 
 
@@ -39,8 +43,8 @@ def send_slack_message(request, slack_webhook_url: str, encoded_json_string: byt
     return request(
         "POST",
         slack_webhook_url,
-        headers = {"Content-type": "application/json"},
-        body = encoded_json_string
+        headers={"Content-type": "application/json"},
+        body=encoded_json_string
     )
 
 
@@ -59,7 +63,8 @@ def lambda_handler(event, context):
     session_client: BaseClient = session.client(service_name="ssm", region_name="eu-west-2")
 
     webhook_parameter_name = webhook_parameter_name if webhook_parameter_name else os.environ["WEBHOOK_PARAMETER_NAME"]
-    slack_webhook_url = slack_webhook_url if slack_webhook_url else get_slack_webhook_url(session_client, webhook_parameter_name)
+    slack_webhook_url = slack_webhook_url if slack_webhook_url else get_slack_webhook_url(session_client,
+                                                                                          webhook_parameter_name)
 
     records: list[dict] = event["Records"]
 
@@ -71,3 +76,4 @@ def lambda_handler(event, context):
 
         resp: BaseHTTPResponse = send_slack_message(http.request, slack_webhook_url, encoded_json_string)
         verify_response(resp)
+
