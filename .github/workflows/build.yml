@@ -11,7 +11,9 @@ jobs:
     uses: nationalarchives/dr2-github-actions/.github/workflows/lambda_build.yml@main
     with:
       repo-name: dr2-notifications
-      artifact-name: notifications
+      artifact-name: notifications_lambda
+      artifact-file-type: zip
+      artifact-path: .
       build-command: |
         mkdir package
         pip install --target ./package -r requirements-runtime.txt
