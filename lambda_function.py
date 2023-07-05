@@ -19,13 +19,9 @@ slack_webhook_url = ""
 
 def get_entity_info_and_return_slack_message(record: dict) -> str:
     body = json.loads(record["body"])
+    alarm_name = body["AlarmName"]
     new_state_value = body["NewStateValue"]
-    queue = list(filter(lambda x: x['value'] != 'QueueName', body["Trigger"]["Dimensions"]))[0]['value']
-    if new_state_value == "ALARM":
-        slack_message = f"A message was sent to the DLQ for {queue}"
-    else:
-        slack_message = f"The DLQ for {queue} has been cleared"
-
+    slack_message = f"Cloudwatch alarm {alarm_name} has entered state {new_state_value}"
     return slack_message
 
 
@@ -76,4 +72,3 @@ def lambda_handler(event, context):
 
         resp: BaseHTTPResponse = send_slack_message(http.request, slack_webhook_url, encoded_json_string)
         verify_response(resp)
-

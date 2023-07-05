@@ -13,8 +13,7 @@ class TestNotificationsLambda(unittest.TestCase):
         mock_record = {
                 'messageId': '19dd0b57-b21e-4ac1-bd88-01bbb068cb78',
                 'receiptHandle': 'MessageReceiptHandle',
-                'body': '{"NewStateValue":"ALARM", "Trigger":{"Dimensions":[{'
-                        '"value":"intg-download-files-and-metadata","name":"value"}]}}',
+                'body': '{"AlarmName": "test-alarm-name", "NewStateValue":"ALARM"}',
                 'attributes': {
                    'ApproximateReceiveCount': '1',
                    'SentTimestamp': '1523232000000',
@@ -28,7 +27,7 @@ class TestNotificationsLambda(unittest.TestCase):
                 'awsRegion': 'us-east-1'
              }
         slack_message = get_entity_info_and_return_slack_message(mock_record)
-        self.assertEqual(f"A message was sent to the DLQ for intg-download-files-and-metadata", slack_message)
+        self.assertEqual(f"Cloudwatch alarm test-alarm-name has entered state ALARM", slack_message)
 
     def test_get_slack_webhook_url_should_return_url_if_all_good(self):
         client = Mock()
