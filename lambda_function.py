@@ -21,7 +21,11 @@ def get_cloudwatch_alarm_info_and_return_slack_message(record: dict) -> str:
     body = json.loads(record["body"])
     alarm_name = body["AlarmName"]
     new_state_value = body["NewStateValue"]
-    slack_message = f"Cloudwatch alarm {alarm_name} has entered state {new_state_value}"
+    if new_state_value == "OK":
+        emoji = ":green-tick"
+    else:
+        emoji = ":alert:"
+    slack_message = f"{emoji} Cloudwatch alarm **{alarm_name}** has entered state **{new_state_value}**"
     return slack_message
 
 
