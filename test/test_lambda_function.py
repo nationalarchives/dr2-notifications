@@ -27,7 +27,7 @@ class TestNotificationsLambda(unittest.TestCase):
                 'awsRegion': 'us-east-1'
              }
         slack_message = get_cloudwatch_alarm_info_and_return_slack_message(mock_record)
-        self.assertEqual(":alert: Cloudwatch alarm **test-alarm-name** has entered state **ALARM**", slack_message)
+        self.assertEqual(":alert-noflash-slow: Cloudwatch alarm *test-alarm-name* has entered state *ALARM*", slack_message)
 
     def test_get_slack_webhook_url_should_return_url_if_all_good(self):
         client = Mock()
