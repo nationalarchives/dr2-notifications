@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, Mock
 
 from botocore.exceptions import ClientError
 
-from lambda_function import get_entity_info_and_return_slack_message, get_slack_webhook_url, send_slack_message, \
+from lambda_function import get_cloudwatch_alarm_info_and_return_slack_message, get_slack_webhook_url, send_slack_message, \
     BaseHTTPResponse, verify_response
 
 
@@ -26,7 +26,7 @@ class TestNotificationsLambda(unittest.TestCase):
                 'eventSourceARN': 'arn:aws:sqs:us-east-1:123456789012:MyQueue',
                 'awsRegion': 'us-east-1'
              }
-        slack_message = get_entity_info_and_return_slack_message(mock_record)
+        slack_message = get_cloudwatch_alarm_info_and_return_slack_message(mock_record)
         self.assertEqual(f"Cloudwatch alarm test-alarm-name has entered state ALARM", slack_message)
 
     def test_get_slack_webhook_url_should_return_url_if_all_good(self):
