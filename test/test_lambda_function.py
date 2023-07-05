@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, Mock
 
 from botocore.exceptions import ClientError
 
-from lambda_function import get_entity_info_and_return_slack_message, get_slack_webhook_url, send_slack_message, \
+from lambda_function import get_cloudwatch_alarm_info_and_return_slack_message, get_slack_webhook_url, send_slack_message, \
     BaseHTTPResponse, verify_response
 
 
@@ -13,7 +13,7 @@ class TestNotificationsLambda(unittest.TestCase):
         mock_record = {
                 'messageId': '19dd0b57-b21e-4ac1-bd88-01bbb068cb78',
                 'receiptHandle': 'MessageReceiptHandle',
-                'body': '{"ref": "1234"}',
+                'body': '{"AlarmName": "test-alarm-name", "NewStateValue":"ALARM"}',
                 'attributes': {
                    'ApproximateReceiveCount': '1',
                    'SentTimestamp': '1523232000000',
@@ -26,8 +26,8 @@ class TestNotificationsLambda(unittest.TestCase):
                 'eventSourceARN': 'arn:aws:sqs:us-east-1:123456789012:MyQueue',
                 'awsRegion': 'us-east-1'
              }
-        slack_message = get_entity_info_and_return_slack_message(mock_record)
-        self.assertEqual(f"A SQS message containing the entity ref: _*1234*_ was sent to the _*DLQ*_", slack_message)
+        slack_message = get_cloudwatch_alarm_info_and_return_slack_message(mock_record)
+        self.assertEqual(":alert-noflash-slow: Cloudwatch alarm *test-alarm-name* has entered state *ALARM*", slack_message)
 
     def test_get_slack_webhook_url_should_return_url_if_all_good(self):
         client = Mock()

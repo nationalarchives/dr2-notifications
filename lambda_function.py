@@ -17,11 +17,15 @@ webhook_parameter_name = ""
 slack_webhook_url = ""
 
 
-def get_entity_info_and_return_slack_message(record: dict) -> str:
+def get_cloudwatch_alarm_info_and_return_slack_message(record: dict) -> str:
     body = json.loads(record["body"])
-    entity_ref: str = body["ref"]
-
-    slack_message = f"A SQS message containing the entity ref: _*{entity_ref}*_ was sent to the _*DLQ*_"
+    alarm_name = body["AlarmName"]
+    new_state_value = body["NewStateValue"]
+    if new_state_value == "OK":
+        emoji = ":green-tick:"
+    else:
+        emoji = ":alert-noflash-slow:"
+    slack_message = f"{emoji} Cloudwatch alarm *{alarm_name}* has entered state *{new_state_value}*"
     return slack_message
 
 
@@ -39,8 +43,8 @@ def send_slack_message(request, slack_webhook_url: str, encoded_json_string: byt
     return request(
         "POST",
         slack_webhook_url,
-        headers = {"Content-type": "application/json"},
-        body = encoded_json_string
+        headers={"Content-type": "application/json"},
+        body=encoded_json_string
     )
 
 
@@ -59,12 +63,13 @@ def lambda_handler(event, context):
     session_client: BaseClient = session.client(service_name="ssm", region_name="eu-west-2")
 
     webhook_parameter_name = webhook_parameter_name if webhook_parameter_name else os.environ["WEBHOOK_PARAMETER_NAME"]
-    slack_webhook_url = slack_webhook_url if slack_webhook_url else get_slack_webhook_url(session_client, webhook_parameter_name)
+    slack_webhook_url = slack_webhook_url if slack_webhook_url else get_slack_webhook_url(session_client,
+                                                                                          webhook_parameter_name)
 
     records: list[dict] = event["Records"]
 
     for record in records:
-        slack_message = get_entity_info_and_return_slack_message(record)
+        slack_message = get_cloudwatch_alarm_info_and_return_slack_message(record)
         slack_message_in_json = {"text": slack_message}
 
         encoded_json_string: bytes = json.dumps(slack_message_in_json, indent=2).encode("utf-8")
